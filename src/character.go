@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -138,19 +141,19 @@ func characterWindow(app *fyne.App, charName string) fyne.Window {
 
 }
 
-type DotButton struct {
+type Dot2Button struct {
 	Max     int
 	Min     int
 	Value   int
-	Buttons []*widget.Button
+	Buttons []*tappableIcon
 }
 
-func (d *DotButton) SetValue(value int) {
+func (d *Dot2Button) SetValue(value int) {
 	d.Value = value
 	// Set button appearances
 }
 
-func (d *DotButton) ToCanvas() *fyne.Container {
+func (d *Dot2Button) ToCanvas() *fyne.Container {
 	x := fyne.NewContainerWithLayout(
 		layout.NewHBoxLayout(),
 	)
@@ -160,14 +163,20 @@ func (d *DotButton) ToCanvas() *fyne.Container {
 	return x
 }
 
-func MakeDotButtons(max int, min int) DotButton {
-	var d DotButton
+func MakeDotButtons(max int, min int) Dot2Button {
+	var d Dot2Button
 	d.Max = max
 	d.Min = min
-	d.Buttons = make([]*widget.Button, max)
+	d.Value = min
+
+	d.Buttons = make([]*tappableIcon, max)
 	for x := range d.Buttons {
 		z := x
-		d.Buttons[x] = widget.NewButtonWithIcon("", theme.RadioButtonIcon(), func() {
+		icon := theme.RadioButtonIcon()
+		if x < d.Value {
+			icon = theme.RadioButtonCheckedIcon()
+		}
+		d.Buttons[x] = newTappableIcon(icon, func() {
 			thisValue := z + 1
 			// @todo: Check if this is a valid value
 			if thisValue < d.Min || thisValue == d.Value {
@@ -177,16 +186,133 @@ func MakeDotButtons(max int, min int) DotButton {
 				d.Value = thisValue
 			}
 			for mep := 0; mep < d.Value; mep++ {
-				d.Buttons[mep].Icon = theme.RadioButtonCheckedIcon()
+				d.Buttons[mep].Icon.Resource = theme.RadioButtonCheckedIcon()
 				d.Buttons[mep].Refresh()
 			}
 			for mep := d.Value; mep < d.Max; mep++ {
-				d.Buttons[mep].Icon = theme.RadioButtonIcon()
+				d.Buttons[mep].Icon.Resource = theme.RadioButtonIcon()
 				d.Buttons[mep].Refresh()
 			}
 			fmt.Printf("Tapped %d\n", z+1)
 		})
-		d.Buttons[x].Importance = widget.LowImportance
 	}
 	return d
+}
+
+func MakeEditableCharacterSheet() *fyne.Container {
+	mep0 := MakeDotButtons(5, 1)
+	mep1 := MakeDotButtons(5, 1)
+	mep2 := MakeDotButtons(5, 1)
+	attributesLine := container.New(
+		layout.NewHBoxLayout(),
+		container.New(
+			layout.NewVBoxLayout(),
+			canvas.NewText("Force", color.Black),
+			canvas.NewText("Finesse", color.Black),
+			canvas.NewText("Resilience", color.Black),
+		),
+		container.New(
+			layout.NewFormLayout(),
+			container.New(layout.NewHBoxLayout(), canvas.NewText("Intellect", color.Black)),
+			mep0.ToCanvas(),
+			container.New(layout.NewHBoxLayout(), canvas.NewText("Cunning", color.Black)),
+			mep1.ToCanvas(),
+			container.New(layout.NewHBoxLayout(), canvas.NewText("Resolve", color.Black)),
+			mep2.ToCanvas(),
+		),
+		container.New(
+			layout.NewFormLayout(),
+			container.New(layout.NewHBoxLayout(), canvas.NewText("Might", color.Black)),
+			mep0.ToCanvas(),
+			container.New(layout.NewHBoxLayout(), canvas.NewText("Dexterity", color.Black)),
+			mep1.ToCanvas(),
+			container.New(layout.NewHBoxLayout(), canvas.NewText("Stamina", color.Black)),
+			mep2.ToCanvas(),
+		),
+		container.New(
+			layout.NewFormLayout(),
+			container.New(layout.NewHBoxLayout(), canvas.NewText("Presence", color.Black)),
+			mep0.ToCanvas(),
+			container.New(layout.NewHBoxLayout(), canvas.NewText("Manipulation", color.Black)),
+			mep1.ToCanvas(),
+			container.New(layout.NewHBoxLayout(), canvas.NewText("Composure", color.Black)),
+			mep2.ToCanvas(),
+		),
+	)
+	skillsLine := container.New(
+		layout.NewGridLayoutWithColumns(2),
+		container.New(
+			layout.NewFormLayout(),
+			container.New(layout.NewHBoxLayout(), canvas.NewText("Aim", color.Black)),
+			container.New(
+				layout.NewHBoxLayout(),
+				layout.NewSpacer(),
+				container.New(layout.NewCenterLayout(), mep0.ToCanvas()),
+				canvas.NewText("  ", color.White),
+			),
+			container.New(layout.NewHBoxLayout(), canvas.NewText("Athletics", color.Black)),
+			container.New(
+				layout.NewHBoxLayout(),
+				layout.NewSpacer(),
+				container.New(layout.NewCenterLayout(), mep0.ToCanvas()),
+				canvas.NewText("  ", color.White),
+			),
+			container.New(layout.NewHBoxLayout(), canvas.NewText("Close Combat", color.Black)),
+			container.New(
+				layout.NewHBoxLayout(),
+				layout.NewSpacer(),
+				container.New(layout.NewCenterLayout(), mep0.ToCanvas()),
+				canvas.NewText("  ", color.White),
+			),
+		),
+		container.New(
+			layout.NewFormLayout(),
+			container.New(layout.NewHBoxLayout(), canvas.NewText("Integrity", color.Black)),
+			container.New(layout.NewHBoxLayout(), layout.NewSpacer(), container.New(layout.NewCenterLayout(), mep0.ToCanvas())),
+		),
+	)
+	return container.New(
+		layout.NewVBoxLayout(),
+		// Basic Info
+		container.New(
+			layout.NewGridLayoutWithColumns(2),
+			container.New(
+				layout.NewFormLayout(),
+				widget.NewLabel("Name"),
+				widget.NewEntry(),
+				widget.NewLabel("Player"),
+				widget.NewEntry(),
+				widget.NewLabel("Concept"),
+				widget.NewEntry(),
+			),
+			container.New(
+				layout.NewGridLayoutWithColumns(3),
+				widget.NewLabel("Origin Path"),
+				widget.NewSelect([]string{"Path1", "Path2"}, func(option string) { fmt.Printf("String %s\n", option) }),
+				container.New(layout.NewCenterLayout(), mep0.ToCanvas()),
+				widget.NewLabel("Role Path"),
+				widget.NewSelect([]string{"Path1", "Path2"}, func(option string) { fmt.Printf("String %s\n", option) }),
+				container.New(layout.NewCenterLayout(), mep0.ToCanvas()),
+				widget.NewLabel("Allegiance Path"),
+				widget.NewSelect([]string{"Path1", "Path2"}, func(option string) { fmt.Printf("String %s\n", option) }),
+				container.New(layout.NewCenterLayout(), mep0.ToCanvas()),
+			),
+		),
+		container.New(
+			layout.NewFormLayout(),
+			widget.NewLabel("Moment of Inspiration"),
+			widget.NewEntry(),
+		),
+		// Aspirations
+		// Skills
+		widget.NewLabel("SKILLS"),
+		skillsLine,
+		// Skill Tricks
+		// Attributes
+		widget.NewLabel("ATTRIBUTES"),
+		attributesLine,
+		// Edges
+		// Health
+		// Chartype Specific
+	)
 }
