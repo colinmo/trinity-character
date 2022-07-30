@@ -1,4 +1,7 @@
 {
     "sonarlint.connectedMode.connections.sonarqube": [
     ],
+    "editor.codeActionsOnSave": {
+    
+    },
 }
