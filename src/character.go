@@ -352,7 +352,7 @@ func MakeCharacterCreationScreen(splat Splat) *fyne.Container {
 		widget.NewLabel("Aspiration (Short)"),
 		widget.NewEntry(),
 		widget.NewLabel("Aspiration (Long)"),
-		widget.NewEntry(),
+		widget.NewMultiLineEntry(),
 	}
 	baseStep2 := []fyne.CanvasObject{
 		widget.NewLabel("Origin"),
@@ -400,36 +400,21 @@ func MakeCharacterCreationScreen(splat Splat) *fyne.Container {
 			widget.NewLabel(header),
 		),
 		// Step 1
-		container.NewVBox(
-			widget.NewLabel("Step 1: Concept"),
-			container.New(
-				layout.NewFormLayout(),
-				baseStep1...,
-			),
-		),
-		// Step 2
-		container.NewVBox(
-			widget.NewLabel("Step 2: Paths"),
-			container.New(
-				layout.NewFormLayout(),
-				baseStep2...,
-			),
-		),
-		// Step 3
-		container.NewMax(
-			widget.NewLabel("Step 3: Skills, Skill tricks, Specialties"),
-		),
-		// Step 4
-		container.NewMax(
-			widget.NewLabel("Step 4: Attributes"),
-		),
-		// Step 5
-		container.NewMax(
-			widget.NewLabel("Step 5: Template"),
-		),
-		// Step 6
-		container.NewMax(
-			widget.NewLabel("Step 6: Finishing Touches"),
+		container.NewAppTabs(
+			container.NewTabItem("Concept",
+				container.New(
+					layout.NewFormLayout(),
+					baseStep1...,
+				)),
+			container.NewTabItem("Paths",
+				container.New(
+					layout.NewFormLayout(),
+					baseStep2...,
+				)),
+			container.NewTabItem("Skills, Skill tricks, Specialties", container.NewMax(widget.NewLabel("Pending"))),
+			container.NewTabItem("Attributes", container.NewMax(widget.NewLabel("Pending"))),
+			container.NewTabItem("Template", container.NewMax(widget.NewLabel("Pending"))),
+			container.NewTabItem("Finishing Touches", container.NewMax(widget.NewLabel("Pending"))),
 		),
 	)
 }
