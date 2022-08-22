@@ -242,38 +242,43 @@ func MakeEditableCharacterSheet() *fyne.Container {
 	skillsLine := container.New(
 		layout.NewGridLayoutWithColumns(2),
 		container.New(
-			layout.NewFormLayout(),
-			container.New(layout.NewMaxLayout(), canvas.NewRectangle(color.NRGBA{R: 200, G: 100, B: 0, A: 33}),
-				container.New(layout.NewHBoxLayout(), canvas.NewText("Aim", color.Black))),
-			container.New(layout.NewMaxLayout(), canvas.NewRectangle(color.NRGBA{R: 200, G: 100, B: 0, A: 33}),
+			layout.NewVBoxLayout(),
+			container.New(
+				layout.NewMaxLayout(),
+				canvas.NewRectangle(color.NRGBA{R: 200, G: 100, B: 0, A: 33}),
 				container.New(
 					layout.NewHBoxLayout(),
+					canvas.NewText("Aim", color.Black),
 					layout.NewSpacer(),
-					container.New(layout.NewCenterLayout(), mep0.ToCanvas()),
-				)),
-
-			container.New(layout.NewHBoxLayout(), canvas.NewText("Athletics", color.Black)),
+					container.New(layout.NewCenterLayout(), mep0.ToCanvas())),
+			),
 			container.New(
 				layout.NewHBoxLayout(),
+				canvas.NewText("Athletics", color.Black),
 				layout.NewSpacer(),
 				container.New(layout.NewCenterLayout(), mep0.ToCanvas()),
 			),
-
-			container.New(layout.NewMaxLayout(), canvas.NewRectangle(color.NRGBA{R: 200, G: 100, B: 0, A: 33}),
-				container.New(layout.NewHBoxLayout(), canvas.NewText("Close Combat", color.Black))),
-			container.New(layout.NewMaxLayout(), canvas.NewRectangle(color.NRGBA{R: 200, G: 100, B: 0, A: 33}),
+			container.New(
+				layout.NewMaxLayout(),
+				canvas.NewRectangle(color.NRGBA{R: 200, G: 100, B: 0, A: 33}),
 				container.New(
 					layout.NewHBoxLayout(),
+					canvas.NewText("Close Combat", color.Black),
 					layout.NewSpacer(),
 					container.New(layout.NewCenterLayout(), mep0.ToCanvas())),
 			),
 		),
 		container.New(
-			layout.NewFormLayout(),
-			container.New(layout.NewMaxLayout(), canvas.NewRectangle(color.NRGBA{R: 200, G: 100, B: 0, A: 33}),
-				container.New(layout.NewHBoxLayout(), canvas.NewText("Integrity", color.Black))),
-			container.New(layout.NewMaxLayout(), canvas.NewRectangle(color.NRGBA{R: 200, G: 100, B: 0, A: 33}),
-				container.New(layout.NewHBoxLayout(), layout.NewSpacer(), container.New(layout.NewCenterLayout(), mep0.ToCanvas()))),
+			layout.NewVBoxLayout(),
+			container.New(
+				layout.NewMaxLayout(),
+				canvas.NewRectangle(color.NRGBA{R: 200, G: 100, B: 0, A: 33}),
+				container.New(
+					layout.NewHBoxLayout(),
+					canvas.NewText("Integrity", color.Black),
+					layout.NewSpacer(),
+					container.New(layout.NewCenterLayout(), mep0.ToCanvas())),
+			),
 		),
 	)
 	return container.New(
