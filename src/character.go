@@ -59,7 +59,7 @@ type Path struct {
 	Name        string
 	Concept     string
 	Connections string
-	Skills      []Skill
+	Skills      [][]Skill
 	Edges       []Edge
 }
 
