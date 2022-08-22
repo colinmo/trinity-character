@@ -20,6 +20,16 @@ const (
 	Resilience
 )
 
+type Splat int64
+
+const (
+	Trinity Splat = iota
+	Psion
+	Aberrant
+	Adventure
+	Aether
+)
+
 type Skill struct {
 	Name         string
 	Blurb        string
@@ -154,7 +164,7 @@ func (d *Dot2Button) SetValue(value int) {
 }
 
 func (d *Dot2Button) ToCanvas() *fyne.Container {
-	x := fyne.NewContainerWithLayout(
+	x := container.New(
 		layout.NewHBoxLayout(),
 	)
 	for _, y := range d.Buttons {
@@ -324,5 +334,102 @@ func MakeEditableCharacterSheet() *fyne.Container {
 		// Edges
 		// Health
 		// Chartype Specific
+	)
+}
+
+func MakeCharacterCreationScreen(splat Splat) *fyne.Container {
+	// Get the splat specific configurations like Paths
+	header := "Trinity"
+	baseStep1 := []fyne.CanvasObject{
+		widget.NewLabel("Name"),
+		widget.NewEntry(),
+		widget.NewLabel("Player"),
+		widget.NewEntry(),
+		widget.NewLabel("Concept"),
+		widget.NewEntry(),
+		widget.NewLabel("Aspiration (Short)"),
+		widget.NewEntry(),
+		widget.NewLabel("Aspiration (Short)"),
+		widget.NewEntry(),
+		widget.NewLabel("Aspiration (Long)"),
+		widget.NewEntry(),
+	}
+	baseStep2 := []fyne.CanvasObject{
+		widget.NewLabel("Origin"),
+		widget.NewEntry(),
+		widget.NewLabel(""),
+		container.NewGridWithColumns(4,
+			widget.NewLabel("Skill1"),
+			widget.NewLabel("Skill2"),
+			widget.NewLabel("Skill3"),
+			widget.NewLabel("Skill4"),
+		),
+		widget.NewLabel(""),
+		container.NewGridWithColumns(2,
+			widget.NewLabel("Edge1"),
+			widget.NewLabel("Edge2"),
+		),
+		widget.NewLabel(""),
+		container.New(
+			layout.NewFormLayout(),
+			widget.NewLabel("Details"),
+			widget.NewEntry(),
+			widget.NewLabel("Path Condition"),
+			widget.NewEntry(),
+		),
+		widget.NewLabel("Role"),
+		widget.NewEntry(),
+		widget.NewLabel("Society"),
+		widget.NewEntry(),
+	}
+	switch splat {
+	case Psion:
+		header = "Psion"
+		baseStep1 = append(baseStep1,
+			widget.NewLabel("Psi Order"),
+			widget.NewEntry())
+	case Aberrant:
+		header = "Aberrant"
+	case Aether:
+		header = "Aether"
+	case Adventure:
+		header = "Adventure!"
+	}
+	return container.NewVBox(
+		container.NewMax(
+			widget.NewLabel(header),
+		),
+		// Step 1
+		container.NewVBox(
+			widget.NewLabel("Step 1: Concept"),
+			container.New(
+				layout.NewFormLayout(),
+				baseStep1...,
+			),
+		),
+		// Step 2
+		container.NewVBox(
+			widget.NewLabel("Step 2: Paths"),
+			container.New(
+				layout.NewFormLayout(),
+				baseStep2...,
+			),
+		),
+		// Step 3
+		container.NewMax(
+			widget.NewLabel("Step 3: Skills, Skill tricks, Specialties"),
+		),
+		// Step 4
+		container.NewMax(
+			widget.NewLabel("Step 4: Attributes"),
+		),
+		// Step 5
+		container.NewMax(
+			widget.NewLabel("Step 5: Template"),
+		),
+		// Step 6
+		container.NewMax(
+			widget.NewLabel("Step 6: Finishing Touches"),
+		),
 	)
 }
