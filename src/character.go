@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -337,7 +338,7 @@ func MakeEditableCharacterSheet() *fyne.Container {
 	)
 }
 
-func MakeCharacterCreationScreen(splat Splat) *fyne.Container {
+func MakeCharacterCreationScreen(splat Splat, window *fyne.Window) *fyne.Container {
 	// Get the splat specific configurations like Paths
 	header := "Trinity"
 	baseStep1 := []fyne.CanvasObject{
@@ -354,34 +355,9 @@ func MakeCharacterCreationScreen(splat Splat) *fyne.Container {
 		widget.NewLabel("Aspiration (Long)"),
 		widget.NewMultiLineEntry(),
 	}
-	baseStep2 := []fyne.CanvasObject{
-		widget.NewLabel("Origin"),
-		widget.NewEntry(),
-		widget.NewLabel(""),
-		container.NewGridWithColumns(4,
-			widget.NewLabel("Skill1"),
-			widget.NewLabel("Skill2"),
-			widget.NewLabel("Skill3"),
-			widget.NewLabel("Skill4"),
-		),
-		widget.NewLabel(""),
-		container.NewGridWithColumns(2,
-			widget.NewLabel("Edge1"),
-			widget.NewLabel("Edge2"),
-		),
-		widget.NewLabel(""),
-		container.New(
-			layout.NewFormLayout(),
-			widget.NewLabel("Details"),
-			widget.NewEntry(),
-			widget.NewLabel("Path Condition"),
-			widget.NewEntry(),
-		),
-		widget.NewLabel("Role"),
-		widget.NewEntry(),
-		widget.NewLabel("Society"),
-		widget.NewEntry(),
-	}
+	baseStep2 := append(pathSelectorFor("Origin", splat, window), pathSelectorFor("Role", splat, window)...)
+	baseStep2 = append(baseStep2, pathSelectorFor("Society", splat, window)...)
+
 	switch splat {
 	case Psion:
 		header = "Psion"
@@ -399,7 +375,6 @@ func MakeCharacterCreationScreen(splat Splat) *fyne.Container {
 		container.NewMax(
 			widget.NewLabel(header),
 		),
-		// Step 1
 		container.NewAppTabs(
 			container.NewTabItem("Concept",
 				container.New(
@@ -417,4 +392,69 @@ func MakeCharacterCreationScreen(splat Splat) *fyne.Container {
 			container.NewTabItem("Finishing Touches", container.NewMax(widget.NewLabel("Pending"))),
 		),
 	)
+}
+
+func pathSelectorFor(path string, splat Splat, window *fyne.Window) []fyne.CanvasObject {
+	availablePaths := []Path{}
+	availablePathIndexes := []string{}
+	for _, x := range PathsBySplat[splat][path] {
+		availablePaths = append(availablePaths, AllPaths[x])
+		availablePathIndexes = append(availablePathIndexes, x)
+	}
+	skill1 := container.NewWithoutLayout(widget.NewLabel("Skill 1"))
+	skill2 := container.NewWithoutLayout(widget.NewLabel("Skill 2"))
+	skill3 := container.NewWithoutLayout(widget.NewLabel("Skill 3"))
+	skill4 := container.NewWithoutLayout(widget.NewLabel("Skill 4"))
+	selector := []fyne.CanvasObject{
+		widget.NewButton(path, func() {
+			// Prompt for Path
+			dialog.ShowCustomConfirm(
+				"Path selector - "+path,
+				"Select",
+				"Cancel",
+				container.NewVBox(widget.NewSelect(
+					availablePathIndexes,
+					func(changed string) {
+						fmt.Printf("Show more details")
+					})),
+				func(isok bool) {
+					if isok {
+						// On select of Path, set the options and reset scores
+						skill1.Objects = []fyne.CanvasObject{widget.NewLabel("Skill Changed")}
+						skill1.Refresh()
+						skill2 = container.NewWithoutLayout(widget.NewLabel("Skill Changed"))
+						skill2.Refresh()
+						skill3 = container.NewWithoutLayout(widget.NewLabel("Skill Changed"))
+						skill3.Refresh()
+						skill4 = container.NewWithoutLayout(widget.NewLabel("Skill Changed"))
+						skill4.Refresh()
+
+					}
+				},
+				(*window),
+			)
+		}),
+		widget.NewEntry(),
+		widget.NewLabel(""),
+		container.NewGridWithColumns(4,
+			skill1,
+			skill2,
+			skill3,
+			skill4,
+		),
+		widget.NewLabel(""),
+		container.NewGridWithColumns(2,
+			widget.NewLabel("Edge1"),
+			widget.NewLabel("Edge2"),
+		),
+		widget.NewLabel(""),
+		container.New(
+			layout.NewFormLayout(),
+			widget.NewLabel("Details"),
+			widget.NewEntry(),
+			widget.NewLabel("Path Condition"),
+			widget.NewEntry(),
+		),
+	}
+	return selector
 }
