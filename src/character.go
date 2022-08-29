@@ -24,7 +24,7 @@ const (
 type Splat int64
 
 const (
-	Trinity Splat = iota
+	Talent Splat = iota
 	Psion
 	Aberrant
 	Adventure
@@ -57,11 +57,13 @@ type Gift struct {
 }
 
 type Path struct {
-	Name        string
-	Concept     string
-	Connections string
-	Skills      [][]Skill
-	Edges       []Edge
+	Name         string
+	Concept      string
+	Connections  string
+	Skills       [][]Skill
+	Edges        []Edge
+	GiftKeySkill []string
+	GiftKeyAttr  string
 }
 
 type Moment struct {
@@ -339,24 +341,124 @@ func MakeEditableCharacterSheet() *fyne.Container {
 }
 
 func MakeCharacterCreationScreen(splat Splat, window *fyne.Window) *fyne.Container {
-	// Get the splat specific configurations like Paths
+	// Character variables
+	// Set first so they can be adjusted during the creation
+	charConcept := map[string]*widget.Entry{}
+	charConcept["Name"] = widget.NewEntry()
+	charConcept["Player"] = widget.NewEntry()
+	charConcept["Concept"] = widget.NewEntry()
+	charConcept["Short Aspiration 1"] = widget.NewEntry()
+	charConcept["Short Aspiration 2"] = widget.NewEntry()
+	charConcept["Long Aspiration"] = widget.NewMultiLineEntry()
+	skillEntries := map[string]*dotSelector{}
+	skillLabels := map[string]*widget.Label{}
+	attributes := map[string]*dotSelector{
+		"Intellect":    newDotSelector(1, 5, 1), // No more than 5 at char creation
+		"Cunning":      newDotSelector(1, 5, 1), // No more than 5 at char creation
+		"Resolve":      newDotSelector(1, 5, 1), // No more than 5 at char creation
+		"Might":        newDotSelector(1, 5, 1), // No more than 5 at char creation
+		"Dexterity":    newDotSelector(1, 5, 1), // No more than 5 at char creation
+		"Stamina":      newDotSelector(1, 5, 1), // No more than 5 at char creation
+		"Presence":     newDotSelector(1, 5, 1), // No more than 5 at char creation
+		"Manipulation": newDotSelector(1, 5, 1), // No more than 5 at char creation
+		"Composure":    newDotSelector(1, 5, 1), // No more than 5 at char creation
+	}
+	favApproach := map[string]*widget.Check{
+		"Force":      widget.NewCheck("Force", func(meOn bool) {}),
+		"Finesse":    widget.NewCheck("Finesse", func(meOn bool) {}),
+		"Resilience": widget.NewCheck("Resilience", func(meOn bool) {}),
+	}
+	for i := range favApproach {
+		var bob = i
+		favApproach[i].OnChanged = func(meOn bool) {
+			if meOn {
+				for i, x := range favApproach {
+					if x.Text != bob {
+						favApproach[i].SetChecked(false)
+					}
+				}
+			}
+		}
+	}
+	// Interface variables
+	// Set first so they can be adjusted during the creation
+	conceptTab := container.NewTabItemWithIcon(
+		"Concept",
+		theme.CheckButtonIcon(),
+		container.NewWithoutLayout(),
+	)
+	pathsTab := container.NewTabItemWithIcon(
+		"Paths",
+		theme.CheckButtonIcon(),
+		container.NewWithoutLayout(),
+	)
+	skillsTab := container.NewTabItemWithIcon(
+		"Skills",
+		theme.CheckButtonIcon(),
+		container.NewWithoutLayout(),
+	)
+	attributesTab := container.NewTabItemWithIcon(
+		"Attributes",
+		theme.CheckButtonIcon(),
+		container.NewWithoutLayout(),
+	)
+	templateTab := container.NewTabItemWithIcon(
+		"Template",
+		theme.CheckButtonIcon(),
+		container.NewWithoutLayout(),
+	)
+	finishingTab := container.NewTabItemWithIcon(
+		"Finishing touches",
+		theme.CheckButtonIcon(),
+		container.NewWithoutLayout(),
+	)
 	header := "Trinity"
+	// Step 1: Concept
 	baseStep1 := []fyne.CanvasObject{
 		widget.NewLabel("Name"),
-		widget.NewEntry(),
+		charConcept["Name"],
 		widget.NewLabel("Player"),
-		widget.NewEntry(),
+		charConcept["Player"],
 		widget.NewLabel("Concept"),
-		widget.NewEntry(),
+		charConcept["Concept"],
 		widget.NewLabel("Aspiration (Short)"),
-		widget.NewEntry(),
+		charConcept["Short Aspiration 1"],
 		widget.NewLabel("Aspiration (Short)"),
-		widget.NewEntry(),
+		charConcept["Short Aspiration 2"],
 		widget.NewLabel("Aspiration (Long)"),
-		widget.NewMultiLineEntry(),
+		charConcept["Long Aspiration"],
 	}
+
+	// Step 2: Paths
+	// Get the splat specific configurations like Paths
 	baseStep2 := append(pathSelectorFor("Origin", splat, window), pathSelectorFor("Role", splat, window)...)
 	baseStep2 = append(baseStep2, pathSelectorFor("Society", splat, window)...)
+
+	// Step 3: Skills
+	baseStep3a := container.New(layout.NewFormLayout())
+	baseStep3b := container.New(layout.NewFormLayout())
+	half := len(AllSkills) / 2
+	count := 0
+	for _, key := range returnAlphaSkill() {
+		skillEntries[key] = newDotSelector(0, 5, 0)
+		skillLabels[key] = widget.NewLabel(AllSkills[key].Name)
+		if count < half {
+			baseStep3a.Objects = append(
+				baseStep3a.Objects,
+				skillLabels[key],
+				skillEntries[key],
+			)
+		} else {
+			baseStep3b.Objects = append(
+				baseStep3b.Objects,
+				skillLabels[key],
+				skillEntries[key],
+			)
+		}
+		count++
+	}
+
+	skillLabels["Aim"].Text = "Aim (+2)"
 
 	switch splat {
 	case Psion:
@@ -371,40 +473,189 @@ func MakeCharacterCreationScreen(splat Splat, window *fyne.Window) *fyne.Contain
 	case Adventure:
 		header = "Adventure!"
 	}
+
+	// Step 4: Attributes
+	attributesHelp := widget.NewLabel("Characters begin with a single Attribute dot in each of their nine Attributes. Players distribute six dots among the three Attributes in their top-ranked Arena, four dots in their middle-ranked, and two dots in the bottom-ranked.")
+	attributesHelp.Wrapping = fyne.TextWrapWord
+	baseStep4 := container.NewGridWithColumns(4,
+		container.New(
+			layout.NewFormLayout(),
+			widget.NewLabel(""),
+			favApproach["Force"],
+			widget.NewLabel(""),
+			favApproach["Finesse"],
+			widget.NewLabel(""),
+			favApproach["Resilience"],
+		),
+		container.New(
+			layout.NewFormLayout(),
+			widget.NewLabel("Intellect"),
+			attributes["Intellect"],
+			widget.NewLabel("Cunning"),
+			attributes["Cunning"],
+			widget.NewLabel("Resolve"),
+			attributes["Resolve"],
+			widget.NewLabel("                              "),
+			widget.NewLabel("     "),
+		),
+		container.New(
+			layout.NewFormLayout(),
+			widget.NewLabel("Might"),
+			attributes["Might"],
+			widget.NewLabel("Dexterity"),
+			attributes["Dexterity"],
+			widget.NewLabel("Stamina"),
+			attributes["Stamina"],
+			widget.NewLabel("                              "),
+			widget.NewLabel("     "),
+		),
+		container.New(
+			layout.NewFormLayout(),
+			widget.NewLabel("Presence"),
+			attributes["Presence"],
+			widget.NewLabel("Manipulation"),
+			attributes["Manipulation"],
+			widget.NewLabel("Composure"),
+			attributes["Composure"],
+			widget.NewLabel("                              "),
+			widget.NewLabel("     "),
+		),
+	)
+	// Step 5: Template. This is custom per Splat
+	baseStep5 := container.NewMax(widget.NewLabel("Custom template"))
+	switch splat {
+	case Talent:
+		momentOfInspirationText := widget.NewEntry()
+		momentOfInspirationAttr := widget.NewSelect([]string{
+			"Intellect", "Cunning", "Resolve", "Might", "Dexterity", "Stamina", "Presence", "Manipulation", "Composure",
+		}, func(selected string) {})
+		gifts := []*widget.Entry{
+			widget.NewEntry(),
+			widget.NewEntry(),
+			widget.NewEntry(),
+			widget.NewEntry(),
+		}
+		giftLabels := []*widget.Label{
+			widget.NewLabel("Gift, Origin Path"),
+			widget.NewLabel("Gift, Role Path"),
+			widget.NewLabel("Gift, Allegiance Path"),
+			widget.NewLabel("Gift, Open"),
+		}
+		facets := map[string]*dotSelector{
+			"Intuitive":   newDotSelector(0, 5, 0),
+			"Reflective":  newDotSelector(0, 5, 0),
+			"Destructive": newDotSelector(0, 5, 0),
+		}
+		inspiration := widget.NewLabel("1")
+		for i := range facets {
+			bob := facets[i].OnChanged
+			facets[i].OnChanged = func(s string) {
+				bob(s)
+				fmt.Printf("Facets %d|%d|%d\n", facets["Intuitive"].Val, facets["Reflective"].Val, facets["Destructive"].Val)
+				inspiration.SetText(
+					fmt.Sprintf(
+						"%d", 1+
+							((facets["Intuitive"].Val+1)/2)+
+							((facets["Reflective"].Val+1)/2)+
+							((facets["Destructive"].Val+1)/2)),
+				)
+			}
+		}
+		baseStep5 =
+			container.New(
+				layout.NewFormLayout(),
+				widget.NewLabel("Moment of Inspiration"),
+				momentOfInspirationText,
+				widget.NewLabel("Associated attribute"),
+				momentOfInspirationAttr,
+				giftLabels[0],
+				gifts[0],
+				giftLabels[1],
+				gifts[1],
+				giftLabels[2],
+				gifts[2],
+				giftLabels[3],
+				gifts[3],
+				widget.NewLabel("Intuitive"),
+				facets["Intuitive"],
+				widget.NewLabel("Reflective"),
+				facets["Reflective"],
+				widget.NewLabel("Destructive"),
+				facets["Destructive"],
+				widget.NewLabel("Inspiration"),
+				inspiration,
+			)
+	}
+	// Step 6: Final touches
+	// Fill tabs with content
+	conceptTab.Content = container.New(layout.NewFormLayout(), baseStep1...)
+	pathsTab.Content = container.New(layout.NewFormLayout(), baseStep2...)
+	skillsTab.Content = container.NewGridWithColumns(2, baseStep3a, baseStep3b)
+	attributesTab.Content =
+		container.NewVBox(
+			attributesHelp,
+			baseStep4,
+		)
+	templateTab.Content = container.NewVBox(baseStep5)
+	finishingTab.Content = container.NewMax(widget.NewLabel("Bonus trait, 4 points of edges, health, defense"))
+	// Present the tabbed interface
+	appTabs := container.NewAppTabs(
+		conceptTab,
+		pathsTab,
+		skillsTab,
+		attributesTab,
+		templateTab,
+		finishingTab,
+	)
+	// Use this to validate the content on leaving
+	appTabs.OnUnselected = func(tab *container.TabItem) {
+		switch tab.Text {
+		case "Concept":
+			for _, y := range charConcept {
+				if len(y.Text) == 0 {
+					conceptTab.Icon = theme.CheckButtonIcon()
+					return
+				}
+			}
+			conceptTab.Icon = theme.CheckButtonCheckedIcon()
+		}
+		fmt.Printf("Unselected %v\n", tab)
+	}
 	return container.NewVBox(
 		container.NewMax(
 			widget.NewLabel(header),
 		),
-		container.NewAppTabs(
-			container.NewTabItem("Concept",
-				container.New(
-					layout.NewFormLayout(),
-					baseStep1...,
-				)),
-			container.NewTabItem("Paths",
-				container.New(
-					layout.NewFormLayout(),
-					baseStep2...,
-				)),
-			container.NewTabItem("Skills, Skill tricks, Specialties", container.NewMax(widget.NewLabel("Pending"))),
-			container.NewTabItem("Attributes", container.NewMax(widget.NewLabel("Pending"))),
-			container.NewTabItem("Template", container.NewMax(widget.NewLabel("Pending"))),
-			container.NewTabItem("Finishing Touches", container.NewMax(widget.NewLabel("Pending"))),
-		),
+		appTabs,
 	)
 }
 
 func pathSelectorFor(path string, splat Splat, window *fyne.Window) []fyne.CanvasObject {
-	availablePaths := []Path{}
+	availablePaths := map[string]Path{}
 	availablePathIndexes := []string{}
 	for _, x := range PathsBySplat[splat][path] {
-		availablePaths = append(availablePaths, AllPaths[x])
+		availablePaths[x] = AllPaths[x]
 		availablePathIndexes = append(availablePathIndexes, x)
 	}
-	skill1 := container.NewWithoutLayout(widget.NewLabel("Skill 1"))
-	skill2 := container.NewWithoutLayout(widget.NewLabel("Skill 2"))
-	skill3 := container.NewWithoutLayout(widget.NewLabel("Skill 3"))
-	skill4 := container.NewWithoutLayout(widget.NewLabel("Skill 4"))
+	skillPrompts := []fyne.CanvasObject{
+		container.NewHBox(widget.NewLabel("Skill 1"), newDotSelector(0, 5, 0)),
+		container.NewHBox(widget.NewLabel("Skill 2"), newDotSelector(0, 5, 0)),
+		container.NewHBox(widget.NewLabel("Skill 3"), newDotSelector(0, 5, 0)),
+		container.NewHBox(widget.NewLabel("Skill 4"), newDotSelector(0, 5, 0)),
+	}
+	edgePrompts := []fyne.CanvasObject{
+		container.NewHBox(widget.NewLabel("Edge 1"), newDotSelector(0, 5, 0)),
+		container.NewHBox(widget.NewLabel("Edge 2"), newDotSelector(0, 5, 0)),
+	}
+	pathDescription := widget.NewMultiLineEntry()
+	pathDescription.Disable()
+	pathSelectBox := widget.NewSelect(
+		availablePathIndexes,
+		func(changed string) {
+			if len(changed) > 0 {
+				pathDescription.Text = fmt.Sprintf("%v", availablePaths[changed])
+				pathDescription.Refresh()
+			}
+		})
 	selector := []fyne.CanvasObject{
 		widget.NewButton(path, func() {
 			// Prompt for Path
@@ -412,23 +663,33 @@ func pathSelectorFor(path string, splat Splat, window *fyne.Window) []fyne.Canva
 				"Path selector - "+path,
 				"Select",
 				"Cancel",
-				container.NewVBox(widget.NewSelect(
-					availablePathIndexes,
-					func(changed string) {
-						fmt.Printf("Show more details")
-					})),
+				container.NewVBox(
+					pathSelectBox,
+					pathDescription,
+				),
 				func(isok bool) {
 					if isok {
-						// On select of Path, set the options and reset scores
-						skill1.Objects = []fyne.CanvasObject{widget.NewLabel("Skill Changed")}
-						skill1.Refresh()
-						skill2 = container.NewWithoutLayout(widget.NewLabel("Skill Changed"))
-						skill2.Refresh()
-						skill3 = container.NewWithoutLayout(widget.NewLabel("Skill Changed"))
-						skill3.Refresh()
-						skill4 = container.NewWithoutLayout(widget.NewLabel("Skill Changed"))
-						skill4.Refresh()
-
+						thisPath := availablePaths[pathSelectBox.Selected]
+						for i, x := range thisPath.Skills {
+							if len(x) == 1 {
+								skillPrompts[i] = container.NewHBox(widget.NewLabel(x[0].Name), newDotSelector(0, 5, 0))
+							} else {
+								skillOptions := []string{}
+								for _, z := range x {
+									skillOptions = append(skillOptions, z.Name)
+								}
+								skillPrompts[i] = container.NewHBox(widget.NewSelect(skillOptions, func(bob string) {
+								}), newDotSelector(0, 5, 0))
+							}
+							skillPrompts[i].Refresh()
+						}
+						edgeOptions := []string{}
+						for _, x := range thisPath.Edges {
+							edgeOptions = append(edgeOptions, x.Name)
+						}
+						for i := range edgePrompts {
+							edgePrompts[i] = container.NewHBox(widget.NewSelect(edgeOptions, func(changed string) {}), newDotSelector(0, 5, 0))
+						}
 					}
 				},
 				(*window),
@@ -436,17 +697,9 @@ func pathSelectorFor(path string, splat Splat, window *fyne.Window) []fyne.Canva
 		}),
 		widget.NewEntry(),
 		widget.NewLabel(""),
-		container.NewGridWithColumns(4,
-			skill1,
-			skill2,
-			skill3,
-			skill4,
-		),
+		container.NewGridWithColumns(4, skillPrompts...),
 		widget.NewLabel(""),
-		container.NewGridWithColumns(2,
-			widget.NewLabel("Edge1"),
-			widget.NewLabel("Edge2"),
-		),
+		container.NewGridWithColumns(2, edgePrompts...),
 		widget.NewLabel(""),
 		container.New(
 			layout.NewFormLayout(),

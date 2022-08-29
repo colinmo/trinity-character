@@ -1,5 +1,7 @@
 package main
 
+import "sort"
+
 var AllPaths = map[string]Path{
 	"9": {
 		Name:        "9",
@@ -9,46 +11,58 @@ var AllPaths = map[string]Path{
 		Edges:       returnEdgesNamed([]string{"Always Prepared", "Covert", "Hair Trigger Reflexes", "Small Unit Tactics", "Sniper", "Wealth"}),
 	},
 	"Adventurer": {
-		Name:        "Adventurer",
-		Concept:     "",
-		Connections: "High-risk Hobbyists (Divers, Mountain Climbers, Stunt Drivers, etc.),	Bomb Disposal Experts, Travel Enthusiasts",
-		Skills:      returnSkillsNamed([][]string{{"Aim"}, {"Athletics"}, {"Pilot"}, {"Survival"}}),
-		Edges:       returnEdgesNamed([]string{"Always Prepared", "Covert", "Hair Trigger Reflex", "Small Unit Tactics", "Sniper", "Wealth"}),
+		Name:         "Adventurer",
+		Concept:      "",
+		Connections:  "High-risk Hobbyists (Divers, Mountain Climbers, Stunt Drivers, etc.),	Bomb Disposal Experts, Travel Enthusiasts",
+		Skills:       returnSkillsNamed([][]string{{"Aim"}, {"Athletics"}, {"Pilot"}, {"Survival"}}),
+		Edges:        returnEdgesNamed([]string{"Always Prepared", "Covert", "Hair Trigger Reflex", "Small Unit Tactics", "Sniper", "Wealth"}),
+		GiftKeyAttr:  "Might",
+		GiftKeySkill: []string{"Pilot", "Survival"},
 	},
 	"Life of Privilege": {
-		Name:        "Life of Privilege",
-		Concept:     "",
-		Skills:      returnSkillsNamed([][]string{{"Command"}, {"Culture"}, {"Integrity"}, {"Persuasion"}}),
-		Edges:       returnEdgesNamed([]string{"Fame", "Patron", "Skilled Liar", "Wealth"}),
-		Connections: "School Alumni, College Club Membership, Local Political Affiliates",
+		Name:         "Life of Privilege",
+		Concept:      "",
+		Skills:       returnSkillsNamed([][]string{{"Command"}, {"Culture"}, {"Integrity"}, {"Persuasion"}}),
+		Edges:        returnEdgesNamed([]string{"Fame", "Patron", "Skilled Liar", "Wealth"}),
+		Connections:  "School Alumni, College Club Membership, Local Political Affiliates",
+		GiftKeyAttr:  "Presence",
+		GiftKeySkill: []string{"Command", "Persuasion"},
 	},
 	"Military Brat": {
-		Name:        "Military Brat",
-		Concept:     "",
-		Skills:      returnSkillsNamed([][]string{{"Command"}, {"Enigmas"}, {"Integrity"}, {"Technology"}}),
-		Edges:       returnEdgesNamed([]string{"Adrenaline Spike", "Demolitions Training", "Forceful Martial Arts", "Free Running", "Precise Martial Arts", "Sniper", "Danger Sense", "Fast Draw", "Iron Will", "Patron", "Small Unit Tactics"}),
-		Connections: "Past Teacher, Military Commander, Steadfast Friend",
+		Name:         "Military Brat",
+		Concept:      "",
+		Skills:       returnSkillsNamed([][]string{{"Command"}, {"Enigmas"}, {"Integrity"}, {"Technology"}}),
+		Edges:        returnEdgesNamed([]string{"Adrenaline Spike", "Demolitions Training", "Forceful Martial Arts", "Free Running", "Precise Martial Arts", "Sniper", "Danger Sense", "Fast Draw", "Iron Will", "Patron", "Small Unit Tactics"}),
+		Connections:  "Past Teacher, Military Commander, Steadfast Friend",
+		GiftKeyAttr:  "Resolve",
+		GiftKeySkill: []string{"Integrity", "Technology"},
 	},
 	"Street Rat": {
-		Name:        "Street Rat",
-		Concept:     "",
-		Skills:      returnSkillsNamed([][]string{{"Athletics"}, {"Enigmas"}, {"Larceny"}, {"Survival"}}),
-		Edges:       returnEdgesNamed([]string{"Adrenaline Spike", "Alternate Identity", "Always Prepared", "Danger Sense", "Hair Trigger Reflexes", "Hardy", "Ms. Fix-It", "Tough Cookie"}),
-		Connections: "Street Gangs, Street Mentor, Helpful Family Member, Store Clerks",
+		Name:         "Street Rat",
+		Concept:      "",
+		Skills:       returnSkillsNamed([][]string{{"Athletics"}, {"Enigmas"}, {"Larceny"}, {"Survival"}}),
+		Edges:        returnEdgesNamed([]string{"Adrenaline Spike", "Alternate Identity", "Always Prepared", "Danger Sense", "Hair Trigger Reflexes", "Hardy", "Ms. Fix-It", "Tough Cookie"}),
+		Connections:  "Street Gangs, Street Mentor, Helpful Family Member, Store Clerks",
+		GiftKeyAttr:  "Cunning",
+		GiftKeySkill: []string{"Larceny", "Survival"},
 	},
 	"Suburbia": {
-		Name:        "Suburbia",
-		Concept:     "",
-		Skills:      returnSkillsNamed([][]string{{"Culture"}, {"Empathy"}, {"Humanities"}, {"Technology"}}),
-		Edges:       returnEdgesNamed([]string{"Artistic Talent", "Big Hearted", "Library", "Patron", "Wealth"}),
-		Connections: "Favorite Professor, Neighbor Friend, Influential Teacher",
+		Name:         "Suburbia",
+		Concept:      "",
+		Skills:       returnSkillsNamed([][]string{{"Culture"}, {"Empathy"}, {"Humanities"}, {"Technology"}}),
+		Edges:        returnEdgesNamed([]string{"Artistic Talent", "Big Hearted", "Library", "Patron", "Wealth"}),
+		Connections:  "Favorite Professor, Neighbor Friend, Influential Teacher",
+		GiftKeyAttr:  "Manipulation",
+		GiftKeySkill: []string{"Culture", "Empathy"},
 	},
 	"Survivalist": {
-		Name:        "Survivalist",
-		Concept:     "",
-		Skills:      returnSkillsNamed([][]string{{"Aim"}, {"Close Combat"}, {"Medicine"}, {"Survival"}}),
-		Edges:       returnEdgesNamed([]string{"Always Prepared", "Animal Ken", "Covert", "Direction Sense", "Hardy", "Iron Will", "Keen Sense", "Swift"}),
-		Connections: "Park Ranger, Conspiracy Groups, RV Neighborhood",
+		Name:         "Survivalist",
+		Concept:      "",
+		Skills:       returnSkillsNamed([][]string{{"Aim"}, {"Close Combat"}, {"Medicine"}, {"Survival"}}),
+		Edges:        returnEdgesNamed([]string{"Always Prepared", "Animal Ken", "Covert", "Direction Sense", "Hardy", "Iron Will", "Keen Sense", "Swift"}),
+		Connections:  "Park Ranger, Conspiracy Groups, RV Neighborhood",
+		GiftKeyAttr:  "Stamina",
+		GiftKeySkill: []string{"Medicing", "Survival"},
 	},
 	"Psi: Oceanian": {
 		Name:        "Psi: Oceanian",
@@ -58,53 +72,67 @@ var AllPaths = map[string]Path{
 		Connections: "Artists or Scientists, Boat or Submarine Pilot, Genetic Engineer, Undersea Miner",
 	},
 	"Charismatic Leader": {
-		Name:        "Charismatic Leader",
-		Concept:     "",
-		Skills:      returnSkillsNamed([][]string{{"Command"}, {"Empathy"}, {"Humanities"}, {"Persuasion"}}),
-		Edges:       returnEdgesNamed([]string{"Fame", "Iron Will", "Skilled Liar", "Striking", "Wealth"}),
-		Connections: "Corporate Board, Megachurch, Political Allies",
+		Name:         "Charismatic Leader",
+		Concept:      "",
+		Skills:       returnSkillsNamed([][]string{{"Command"}, {"Empathy"}, {"Humanities"}, {"Persuasion"}}),
+		Edges:        returnEdgesNamed([]string{"Fame", "Iron Will", "Skilled Liar", "Striking", "Wealth"}),
+		Connections:  "Corporate Board, Megachurch, Political Allies",
+		GiftKeyAttr:  "Manipulation",
+		GiftKeySkill: []string{"Command", "Humanities"},
 	},
 	"Combat Specialist": {
-		Name:        "Combat Specialist",
-		Concept:     "",
-		Skills:      returnSkillsNamed([][]string{{"Aim"}, {"Athletics"}, {"Close Combat"}, {"Integrity"}}),
-		Edges:       returnEdgesNamed([]string{"Alternate Identity", "Demolitions Training", "Forceful Martial Arts", "Free Running", "Precise Martial Arts", "Sniper", "Armor Expert", "Breath Control", "Fast Draw", "Hair Trigger Reflexes", "Small Unit Tactics", "Trick Shooter", "Weak Spots"}),
-		Connections: "Military Unit, Police Officers, Training Master",
+		Name:         "Combat Specialist",
+		Concept:      "",
+		Skills:       returnSkillsNamed([][]string{{"Aim"}, {"Athletics"}, {"Close Combat"}, {"Integrity"}}),
+		Edges:        returnEdgesNamed([]string{"Alternate Identity", "Demolitions Training", "Forceful Martial Arts", "Free Running", "Precise Martial Arts", "Sniper", "Armor Expert", "Breath Control", "Fast Draw", "Hair Trigger Reflexes", "Small Unit Tactics", "Trick Shooter", "Weak Spots"}),
+		Connections:  "Military Unit, Police Officers, Training Master",
+		GiftKeyAttr:  "Might",
+		GiftKeySkill: []string{"Aim", "Close Combat"},
 	},
 	"Detective": {
-		Name:        "Detective",
-		Concept:     "",
-		Skills:      returnSkillsNamed([][]string{{"Aim"}, {"Enigmas"}, {"Integrity"}, {"Persuasion"}}),
-		Edges:       returnEdgesNamed([]string{"Alternate Identity", "Demolitions Training", "Forceful Martial Arts", "Free Running", "Precise Martial Arts", "Sniper", "Fast Draw", "Library", "Photographic Memory", "Swift", "Tough Cookie"}),
-		Connections: "Police Officers, Paid Informant, New Reporter, Friendly Neighborhood Watch",
+		Name:         "Detective",
+		Concept:      "",
+		Skills:       returnSkillsNamed([][]string{{"Aim"}, {"Enigmas"}, {"Integrity"}, {"Persuasion"}}),
+		Edges:        returnEdgesNamed([]string{"Alternate Identity", "Demolitions Training", "Forceful Martial Arts", "Free Running", "Precise Martial Arts", "Sniper", "Fast Draw", "Library", "Photographic Memory", "Swift", "Tough Cookie"}),
+		Connections:  "Police Officers, Paid Informant, New Reporter, Friendly Neighborhood Watch",
+		GiftKeyAttr:  "Cunning",
+		GiftKeySkill: []string{"Aim", "Enigmas"},
 	},
 	"Medical Practitioner": {
-		Name:        "Medical Practitioner",
-		Concept:     "",
-		Skills:      returnSkillsNamed([][]string{{"Empathy"}, {"Medicine"}, {"Science"}, {"Survival"}}),
-		Edges:       returnEdgesNamed([]string{"Always Prepared", "Ambidextrous", "Big Hearted", "Iron Will", "Keen Sense", "Library", "Wealth"}),
-		Connections: "Surgeon, Pharmacists, Thankful Patient, EMTs",
+		Name:         "Medical Practitioner",
+		Concept:      "",
+		Skills:       returnSkillsNamed([][]string{{"Empathy"}, {"Medicine"}, {"Science"}, {"Survival"}}),
+		Edges:        returnEdgesNamed([]string{"Always Prepared", "Ambidextrous", "Big Hearted", "Iron Will", "Keen Sense", "Library", "Wealth"}),
+		Connections:  "Surgeon, Pharmacists, Thankful Patient, EMTs",
+		GiftKeyAttr:  "Resolve",
+		GiftKeySkill: []string{"Medicine", "Science"},
 	},
 	"Pilot": {
-		Name:        "Pilot",
-		Concept:     "",
-		Skills:      returnSkillsNamed([][]string{{"Aim"}, {"Close Combat"}, {"Pilot"}, {"Technology"}}),
-		Edges:       returnEdgesNamed([]string{"Ambidextrous", "Cool Under Fire", "Demolitions Training", "Direction Sense", "Hair Trigger Reflexes", "Ms. Fix-It", "Patron", "Tough Cookie"}),
-		Connections: "Important Client, Criminal Organization, Indebted Passenger",
+		Name:         "Pilot",
+		Concept:      "",
+		Skills:       returnSkillsNamed([][]string{{"Aim"}, {"Close Combat"}, {"Pilot"}, {"Technology"}}),
+		Edges:        returnEdgesNamed([]string{"Ambidextrous", "Cool Under Fire", "Demolitions Training", "Direction Sense", "Hair Trigger Reflexes", "Ms. Fix-It", "Patron", "Tough Cookie"}),
+		Connections:  "Important Client, Criminal Organization, Indebted Passenger",
+		GiftKeyAttr:  "Dexterity",
+		GiftKeySkill: []string{"Pilot", "Technology"},
 	},
 	"The Sneak": {
-		Name:        "The Sneak",
-		Concept:     "",
-		Skills:      returnSkillsNamed([][]string{{"Athletics"}, {"Enigmas"}, {"Larceny"}, {"Technology"}}),
-		Edges:       returnEdgesNamed([]string{"Adrenaline Spike", "Alternate Identity", "Covert", "Free Running", "Photographic Memory", "Skilled Liar"}),
-		Connections: "Criminal Organization, Best Friend, Police Insider",
+		Name:         "The Sneak",
+		Concept:      "",
+		Skills:       returnSkillsNamed([][]string{{"Athletics"}, {"Enigmas"}, {"Larceny"}, {"Technology"}}),
+		Edges:        returnEdgesNamed([]string{"Adrenaline Spike", "Alternate Identity", "Covert", "Free Running", "Photographic Memory", "Skilled Liar"}),
+		Connections:  "Criminal Organization, Best Friend, Police Insider",
+		GiftKeyAttr:  "Composure",
+		GiftKeySkill: []string{"Athletics", "Larceny"},
 	},
 	"Technology Expert": {
-		Name:        "Technology Expert",
-		Concept:     "",
-		Skills:      returnSkillsNamed([][]string{{"Culture"}, {"Enigmas"}, {"Science"}, {"Technology"}}),
-		Edges:       returnEdgesNamed([]string{"Demolitions Training", "Library", "Lightning Calculator", "Ms. Fixit", "Patron", "Weak Spots", "Swift"}),
-		Connections: "Chop Shop Worker, Research Scientists, Machinist Friend",
+		Name:         "Technology Expert",
+		Concept:      "",
+		Skills:       returnSkillsNamed([][]string{{"Culture"}, {"Enigmas"}, {"Science"}, {"Technology"}}),
+		Edges:        returnEdgesNamed([]string{"Demolitions Training", "Library", "Lightning Calculator", "Ms. Fixit", "Patron", "Weak Spots", "Swift"}),
+		Connections:  "Chop Shop Worker, Research Scientists, Machinist Friend",
+		GiftKeyAttr:  "Intellect",
+		GiftKeySkill: []string{"Science", "Technology"},
 	},
 	"Psi: Off-Earth Colonist": {
 		Name:        "Psi: Off-Earth Colonist",
@@ -292,7 +320,7 @@ var AllPaths = map[string]Path{
 }
 
 var PathsBySplat = map[Splat]map[string][]string{
-	Trinity: {
+	Talent: {
 		"Origin":  {"Adventurer", "Life of Privilege", "Military Brat", "Street Rat", "Suburbia", "Survivalist"},
 		"Role":    {"Charismatic Leader", "Combat Specialist", "Detective", "Medical Practitioner", "Pilot", "The Sneak", "Technology Expert"},
 		"Society": {"9", "Æon Socity", "Archangel", "The Global Cartography Initiative", "The Neptune Foundation", "Pharaoh's Lightkeepers", "Alert Status 1", "La Révolte Éclatante", "Les Fantômes", "National Office of Emergency Research", "The Theseus Club", "The Transcendent Alliance", "Triton Foundation"},
@@ -347,4 +375,15 @@ func returnEdgesNamed(names []string) []Edge {
 		toReturn = append(toReturn, AllEdges[name])
 	}
 	return toReturn
+}
+
+func returnAlphaSkill() []string {
+	mk := make([]string, len(AllSkills))
+	i := 0
+	for k := range AllSkills {
+		mk[i] = k
+		i++
+	}
+	sort.Strings(mk)
+	return mk
 }

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -59,9 +61,9 @@ func newCharacterPrompt(window *fyne.Window) *widget.PopUp {
 	charSelect = widget.NewModalPopUp(
 		container.NewGridWrap(
 			fyne.NewSize(200, 75),
-			widget.NewButton("TrinityCore", func() {
+			widget.NewButton("Talent", func() {
 				charSelect.Hide()
-				(*window).SetContent(MakeCharacterCreationScreen(Trinity, window))
+				(*window).SetContent(MakeCharacterCreationScreen(Talent, window))
 			}),
 			widget.NewButton("Psion", func() {
 				charSelect.Hide()
@@ -117,3 +119,70 @@ The mention of or reference to any company or product on this site is not a chal
 This project and all elements are fiction and intended for entertainment purposes only. Reader discretion is advised.
 
 Check out the Onyx Path at [http://www.theonyxpath.com](http://www.theonyxpath.com).`
+
+type dotSelector struct {
+	widget.Select
+	Min int
+	Max int
+	Val int
+}
+
+func newDotSelector(min int, max int, val int) *dotSelector {
+	selector := &dotSelector{}
+	selector.ExtendBaseWidget(selector)
+	selector.Min = min
+	selector.Max = max
+	selector.Val = val
+	if val < min || val > max {
+		val = min
+	}
+	optionArray := []string{}
+	for x := min; x < max+1; x++ {
+		optionArray = append(optionArray, fmt.Sprintf("%d", x))
+	}
+	selector.Select.Options = optionArray
+	selector.Selected = fmt.Sprintf("%d", val)
+	selector.OnChanged = func(s string) {
+		selector.Val, _ = strconv.Atoi(selector.Selected)
+	}
+	return selector
+}
+
+func (s *dotSelector) Refresh() {
+	if s.Val < s.Min || s.Val > s.Max {
+		s.Val = s.Min
+	}
+	optionArray := []string{}
+	for x := s.Min; x < s.Max+1; x++ {
+		optionArray = append(optionArray, fmt.Sprintf("%d", x))
+	}
+	s.Select.Options = optionArray
+	s.Selected = fmt.Sprintf("%d", s.Val)
+}
+
+func (s *dotSelector) SetMin(min int) {
+	s.Min = min
+	s.Refresh()
+}
+func (s *dotSelector) SetMax(max int) {
+	s.Max = max
+	s.Refresh()
+}
+func (s *dotSelector) SetVal(val int) {
+	s.Val = val
+	s.Refresh()
+}
+
+func (s *dotSelector) MinSize() fyne.Size {
+	return fyne.Size{
+		Width:  30 * 2,
+		Height: 20,
+	}
+}
+
+func (s *dotSelector) MaxSize() fyne.Size {
+	return fyne.Size{
+		Width:  30 * 2,
+		Height: 20,
+	}
+}
